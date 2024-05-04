@@ -2,6 +2,7 @@ import codecs
 import gzip
 import json
 import re
+import os
 
 import jsonlines
 import pandas as pd
@@ -11,33 +12,35 @@ from sklearn.model_selection import train_test_split
 
 def csv_to_jsonl_gz(file, destination):
 
-    text_col = None
+    if not os.path.exists(destination):
 
-    if "personality" in file:
-        text_col = "STATUS"
-    else:
-        text_col = "TEXT"
+        text_col = None
 
-    # Read CSV file
-    df = pd.read_csv(file, encoding="latin1")
+        if "personality" in file:
+            text_col = "STATUS"
+        else:
+            text_col = "TEXT"
 
-    # Select required columns
-    df_selected = df[["#AUTHID", text_col, "cNEU"]]
+        # Read CSV file
+        df = pd.read_csv(file, encoding="latin1")
 
-    # Write to JSONL file
-    with gzip.open(destination, "wt") as jsonl_file:
-        writer = jsonlines.Writer(jsonl_file)
+        # Select required columns
+        df_selected = df[["#AUTHID", text_col, "cNEU"]]
 
-        for index, row in df_selected.iterrows():
-            data = {
-                "#AUTHID": row["#AUTHID"],
-                "STATUS": row[text_col],
-                "cNEU": row["cNEU"]
-            }
+        # Write to JSONL file
+        with gzip.open(destination, "wt") as jsonl_file:
+            writer = jsonlines.Writer(jsonl_file)
 
-            writer.write(data)
+            for index, row in df_selected.iterrows():
+                data = {
+                    "#AUTHID": row["#AUTHID"],
+                    "STATUS": row[text_col],
+                    "cNEU": row["cNEU"]
+                }
 
-        print("file processed successfully")
+                writer.write(data)
+
+            print("file processed successfully")
 
 
 def read_and_clean_lines(infile, verbatim):

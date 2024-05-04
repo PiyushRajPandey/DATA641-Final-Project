@@ -1,5 +1,5 @@
 PERSONALITY_DATASET = "../../data/zips/my_personality.jsonl.gz"
-ESSAY_DATASET = "../data/zips/essays.jsonl.gz"
+ESSAY_DATASET = "../../data/zips/essays.jsonl.gz"
 
 PERSONALITY_CSV = "../../data/csvs/wcpr_personality.csv"
 ESSAY_CSV = "../../data/csvs/wcpr_essays.csv"

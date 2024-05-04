@@ -49,10 +49,9 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------------------------------------------
 
     # function to convert the CSV files to jsonl.gz files.
-    # use only once to create the files.
     # ----------------------------------
-    # bg.csv_to_jsonl_gz(config.PERSONALITY_CSV, "../../data/zips/my_personality.jsonl.gz")
-    # bg.csv_to_jsonl_gz(config.ESSAY_CSV, "../../data/zips/essays.jsonl.gz")
+    bg.csv_to_jsonl_gz(config.PERSONALITY_CSV, config.PERSONALITY_DATASET)
+    bg.csv_to_jsonl_gz(config.ESSAY_CSV, config.ESSAY_DATASET)
 
     # load data, clean it, split it into training and testing sets
     X_train, X_test, y_train, y_test, stop_words = sub_driver.fetch_data(
