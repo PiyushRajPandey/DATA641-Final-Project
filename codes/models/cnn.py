@@ -1,81 +1,135 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from keras.callbacks import EarlyStopping
+from keras.layers import Embedding, Conv1D, MaxPooling1D, Flatten, Dense, Dropout
 from keras.models import Sequential
-from keras.layers import Embedding, Conv1D, GlobalMaxPooling1D, Dense, Dropout
-from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import Tokenizer
+from keras_preprocessing.sequence import pad_sequences
 
-def load_glove_model(glove_file):
-    print("Loading GloVe model...")
-    with open(glove_file, 'r', encoding='utf-8') as f:
-        word_to_index = {}
-        embeddings_index = {}
-        for i, line in enumerate(f):
+import codes.config as config
+from codes.driver import sub_driver
+
+
+def load_embeddings_and_build_model(tokenizer, glove_file_path, embedding_dim):
+
+    # Load GloVe embeddings into a dictionary
+    embeddings_index = {}
+    with open(glove_file_path, encoding='utf-8') as f:
+        for line in f:
             values = line.split()
             word = values[0]
-            word_to_index[word] = i
             coefs = np.asarray(values[1:], dtype='float32')
             embeddings_index[word] = coefs
-    print("Done.")
-    return word_to_index, embeddings_index
 
-def prepare_data(X, y, word_to_index, max_len):
-    X_indices = []
-    for doc in X:
-        words = doc.lower().split()
-        indices = [word_to_index.get(word, 0) for word in words]
-        X_indices.append(indices)
-    X_pad = pad_sequences(X_indices, maxlen=max_len)
-    label_encoder = LabelEncoder()
-    y_encoded = label_encoder.fit_transform(y)
-    return X_pad, y_encoded
+    # Create an embedding matrix
+    word_index = tokenizer.word_index
 
-def build_cnn_model(embedding_matrix, max_len):
+    num_words_to_include = min(len(word_index) + 1, 30000)
+
+    embedding_matrix = np.zeros((num_words_to_include, embedding_dim))
+    
+    for word, index in word_index.items():
+        if index < num_words_to_include:
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                embedding_matrix[index] = embedding_vector
+
+    return embedding_matrix, num_words_to_include
+
+
+def build_cnn_model(num_words, embedding_matrix, max_sequence_length, embedding_dim):
     model = Sequential()
-    model.add(Embedding(input_dim=embedding_matrix.shape[0],
-                        output_dim=embedding_matrix.shape[1],
-                        weights=[embedding_matrix],
-                        input_length=max_len,
-                        trainable=False))
-    model.add(Conv1D(filters=128, kernel_size=5, activation='relu'))
-    model.add(GlobalMaxPooling1D())
-    model.add(Dense(64, activation='relu'))
+
+    # Add embedding layer
+    model.add(
+        Embedding(input_dim=num_words, output_dim=embedding_dim,
+                  weights=[embedding_matrix],
+                  input_length=max_sequence_length,
+                  trainable=False)
+    )
+
+    # Add convolutional layers
+    model.add(Conv1D(filters=256, kernel_size=11, activation='relu'))
+    model.add(MaxPooling1D(pool_size=2))
+
+    model.add(Conv1D(filters=128, kernel_size=9, activation='relu'))
+    model.add(MaxPooling1D(pool_size=2))
+
+    # Flatten layer
+    model.add(Flatten())
+
+    # Add fully connected layers
+    model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='softmax'))
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+    # Output layer
+    model.add(Dense(20, activation='softmax'))
+
+    # Compile the model
+    model.compile(
+        optimizer='adam',
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
     return model
 
-# Example usage:
-X = [...]  # Your text data
-y = [...]  # Your labels
-glove_file = "path/to/glove.6B.50d.txt"  # Path to your GloVe file
 
-# Load GloVe embeddings
-word_to_index, embeddings_index = load_glove_model(glove_file)
+def tokenize_and_prepare_dataset(X_train, X_test, y_train, y_test, tokenizer):
+    unique_labels = set(y_train)
+    label_to_index = {label: float(i) for i, label in enumerate(unique_labels)}
 
-# Prepare data
-max_len = 100  # Maximum length of a document
-X_pad, y_encoded = prepare_data(X, y, word_to_index, max_len)
+    y_train = np.array([label_to_index[label] for label in y_train])
+    y_test = np.array([label_to_index[label] for label in y_test])
 
-# Split data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X_pad, y_encoded, test_size=0.2, random_state=42)
+    tokenizer.fit_on_texts(X_train)
 
-# Create embedding matrix
-vocab_size = len(word_to_index) + 1  # Add one for padding
-embedding_dim = len(embeddings_index['a'])
-embedding_matrix = np.zeros((vocab_size, embedding_dim))
-for word, i in word_to_index.items():
-    embedding_vector = embeddings_index.get(word)
-    if embedding_vector is not None:
-        embedding_matrix[i] = embedding_vector
+    X_train = tokenizer.texts_to_sequences(X_train)
+    X_test = tokenizer.texts_to_sequences(X_test)
 
-# Build CNN model
-num_classes = len(np.unique(y))
-model = build_cnn_model(embedding_matrix, max_len)
+    max_sequence_length = max([len(sequence) for sequence in X_train])
 
-# Train the model
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=64)
+    X_train = pad_sequences(X_train, maxlen=max_sequence_length)
+    X_test = pad_sequences(X_test, maxlen=max_sequence_length)
 
-# Evaluate the model
-loss, accuracy = model.evaluate(X_test, y_test)
-print("Test Accuracy:", accuracy)
+    return X_train, X_test, y_train, y_test, max_sequence_length
+
+
+if __name__ == '__main__':
+    glove_file_path = config.GLOVE_FILE_50D
+    embedding_dim = 50
+
+    X_train, X_test, y_train, y_test, _ = sub_driver.fetch_data(
+        dataset=config.PERSONALITY_DATASET,
+        stopwords=config.STOPWORDS,
+        clean_data=True, verbatim=False,
+        test_size=0.2, seed=config.SEED
+    )
+
+    tokenizer = Tokenizer()
+    X_train, X_test, y_train, y_test, max_sequence_length = tokenize_and_prepare_dataset(
+        X_train, X_test,
+        y_train, y_test,
+        tokenizer
+    )
+
+    embedding_matrix, num_words = load_embeddings_and_build_model(
+        tokenizer, glove_file_path, embedding_dim
+    )
+
+    model = build_cnn_model(num_words, embedding_matrix, max_sequence_length, embedding_dim)
+
+    early_stopping_callback = EarlyStopping(
+        monitor='val_loss',
+        patience=3,
+        restore_best_weights=True
+    )
+
+    history = model.fit(
+        X_train, y_train,
+        epochs=30, batch_size=16,
+        validation_data=(X_test, y_test),
+        callbacks=[early_stopping_callback]
+    )
+
+    loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
+    print(f'Test accuracy: {accuracy:.4f}')

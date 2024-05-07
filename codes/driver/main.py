@@ -35,7 +35,7 @@ if __name__ == '__main__':
     nlp_method = "Word Embeddings"
 
     # load dataset and stop words
-    dataset = config.PERSONALITY_DATASET
+    dataset = config.ESSAY_DATASET
     stopwords_list = config.STOPWORDS
 
     # type of evaluation - comment/uncomment to switch

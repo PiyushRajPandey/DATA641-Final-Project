@@ -30,6 +30,8 @@ def document_statistics(documents):
     print("Maximum document length:", max_doc_length)
     print("Minimum document length:", min_doc_length)
 
+    return max_doc_length
+
 
 # Class Distribution
 def class_distribution(labels):

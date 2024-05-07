@@ -48,6 +48,7 @@ def glove_vectorizer_analysis(X_train, X_test, y_train, y_test,
                               glove_file,
                               test_size):
     words, word_to_vec_map = load_glove_model(glove_file)
+
     classifier = None
 
     X_train_embeddings = glove_vectorizer(X_train, word_to_vec_map)
