@@ -8,4 +8,5 @@ def generate_classifier_and_params():
         'weights': ['uniform', 'distance'],
         'p': [1, 2]
     }
+
     return classifier, param_grid

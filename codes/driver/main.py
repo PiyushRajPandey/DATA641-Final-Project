@@ -25,17 +25,18 @@ if __name__ == '__main__':
 
     # list of ML classifications methods one can try
     # -----------------------------------------------
-    # ml_model_to_try = ["Logistic Reg", "Random Forest", "SVM", "KNN"]
-    ml_model_to_try = ["Logistic Reg"]
+    ml_model_to_try = ["Logistic Reg", "Random Forest", "SVM", "KNN"]
+    # ml_model_to_try = ["Logistic Reg"]
+    # ml_model_to_try = ["Logistic Reg", "KNN"]
 
     # 3 different NLP methods to try
     # --------------------------------
-    # nlp_method = "Count Vectorizer"
+    nlp_method = "Count Vectorizer"
     # nlp_method = "TF-IDF Vectorizer"
-    nlp_method = "Word Embeddings"
+    # nlp_method = "Word Embeddings"
 
     # load dataset and stop words
-    dataset = config.ESSAY_DATASET
+    dataset = config.PERSONALITY_DATASET
     stopwords_list = config.STOPWORDS
 
     # type of evaluation - comment/uncomment to switch

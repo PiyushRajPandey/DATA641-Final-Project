@@ -26,7 +26,7 @@ def load_embeddings_and_build_model(tokenizer, glove_file_path, embedding_dim):
     num_words_to_include = min(len(word_index) + 1, 30000)
 
     embedding_matrix = np.zeros((num_words_to_include, embedding_dim))
-    
+
     for word, index in word_index.items():
         if index < num_words_to_include:
             embedding_vector = embeddings_index.get(word)
