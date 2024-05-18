@@ -1,31 +1,32 @@
 1.	Code setup:
 
-      a.	Clone the GitHub Repository
-      b.	Use an IDE, preferably IntelliJ Pycharm
-      c.	Setup a python interpreter. We used python version 3.10
-      d.	Setup a virtual environment, preferably a conda environment.
-      e.	Once the environment is setup, go inside the ‘DATA641 Final Project’ directory. 
-      f.	Use the command ‘pip install -r requirements.txt’ to install the required modules
-      g.	Please note that some modules might not get installed. One can use conda to install them
-      h.	Once all the modules have been installed, step 1 of code setup is done!
+            i.	Clone the GitHub Repository
+            ii.	Use an IDE, preferably IntelliJ Pycharm
+            iii.	Setup a python interpreter. We used python version 3.10
+            iv.	Setup a virtual environment, preferably a conda environment.
+            v.	Once the environment is setup, go inside the ‘DATA641 Final Project’ directory. 
+            vi.	Use the command ‘pip install -r requirements.txt’ to install the required modules
+            vii.	Please note that some modules might not get installed. One can use conda to install them
+            viii.	Once all the modules have been installed, step 1 of code setup is done!
 
 
 2.	Placing the necessary files:
 
-    a.	A few files that are too large to be placed as a part of the github repo must be manually placed.
-    b.	The first set of files are the GloVe word embeddings. 
-    c.	Go to their website: https://nlp.stanford.edu/projects/glove/
-    d.	Download the glove.6B.zip file and unzip it to your system.
-    e.	Place the ‘glove.6B.50d.txt’ and ‘glove.6B.2000d.txt’ files inside the project in this path: DATA641 Final Project ->  resources
-    f.	Please also make sure that the essay CSV file renamed as ‘wcpr_essays.csv’ and the personality CSV file renamed as ‘wcpr_personality.csv’ are present in the DATA641 Final Project -> data -> csvs folder.
-    g.	Once these checks have been completed, we’re ready to get started!
+          i.	A few files that are too large to be placed as a part of the github repo must be manually placed.
+          ii.	The first set of files are the GloVe word embeddings. 
+          iii.	Go to their website: https://nlp.stanford.edu/projects/glove/
+          iv.	Download the glove.6B.zip file and unzip it to your system.
+          v.	Place the ‘glove.6B.50d.txt’ and ‘glove.6B.2000d.txt’ files inside the project in this path: DATA641 Final Project ->  resources
+          vi.	Please also make sure that the essay CSV file renamed as ‘wcpr_essays.csv’ and the personality CSV file renamed as ‘wcpr_personality.csv’ are present in the DATA641 Final Project -> data -> csvs folder.
+          vii.	Once these checks have been completed, we’re ready to get started!
 
 
 3.	There are a bunch of programs that can be run, the important ones are listed below:
 
-    a.	Hyperparameter tuned traditional ML Models
-        i.	To run this, go to ‘DATA641 Final Project -> codes -> driver -> main.py’
-        ii.	You can play around, comment and uncomment various sections of the code in the __main__ function and fetch results as required. 
+a.	Hyperparameter tuned traditional ML Models
+
+      i.	To run this, go to ‘DATA641 Final Project -> codes -> driver -> main.py’
+      ii.	You can play around, comment and uncomment various sections of the code in the __main__ function and fetch results as required. 
 
 b.	CNN Model
 
