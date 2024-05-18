@@ -51,6 +51,7 @@ def glove_vectorizer_analysis(X_train, X_test, y_train, y_test,
 
     classifier = None
 
+    # print(X_train)
     X_train_embeddings = glove_vectorizer(X_train, word_to_vec_map)
 
     if verbatim:

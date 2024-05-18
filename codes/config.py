@@ -9,4 +9,4 @@ STOPWORDS = "../../resources/mallet_en_stoplist.txt"
 GLOVE_FILE_50D = "../../resources/glove.6B.50d.txt"
 GLOVE_FILE_200D = "../../resources/glove.6B.200d.txt"
 
-SEED = 42
+SEED = 19

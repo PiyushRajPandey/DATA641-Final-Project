@@ -1,5 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.model_selection import GridSearchCV, cross_val_score
 
 
@@ -18,7 +19,7 @@ def k_fold_cross_val_evaluation(classifier, param_grid, kfold, X_train, y_train,
     accuracy_scores = cross_val_score(
         classifier,
         X_train, y_train,
-        cv=kfold, scoring='accuracy'
+        cv=kfold, scoring='accuracy',
     )
 
     precision_scores = cross_val_score(
@@ -54,6 +55,33 @@ def k_fold_cross_val_evaluation(classifier, param_grid, kfold, X_train, y_train,
               .format(acc_means, prec_means, recall_means, f1_means, acc_std_devs))
 
 
+def plot_confusion_matrix(y_test, y_pred):
+
+    cm = confusion_matrix(y_test, y_pred)
+
+    # print(cm)
+
+    plt.figure(figsize=(4, 3))
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix')
+    plt.colorbar()
+    tick_marks = np.arange(len(np.unique(y_test)))
+    plt.xticks(tick_marks, np.unique(y_test))
+    plt.yticks(tick_marks, np.unique(y_test))
+
+    fmt = 'd'
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            plt.text(j, i, format(cm[i, j], fmt),
+                     ha="center", va="center",
+                     color="black")
+
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.tight_layout()
+    plt.show()
+
+
 def test_set_evaluation(training_vectorizer, classifier, X_train, y_train, X_test, y_test):
     # Word Embeddings
     if training_vectorizer is None:
@@ -67,11 +95,15 @@ def test_set_evaluation(training_vectorizer, classifier, X_train, y_train, X_tes
         y_pred = classifier.predict(X_features_test)
 
     accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred, average='macro')
-    recall = recall_score(y_test, y_pred, average='macro')
-    f1 = f1_score(y_test, y_pred, average='macro')
+    precision = precision_score(y_test, y_pred, pos_label='n')
+    recall = recall_score(y_test, y_pred, pos_label='n')
+    f1 = f1_score(y_test, y_pred, pos_label='n')
 
     print("Accuracy:", round(accuracy, 3))
     print("Precision:", round(precision, 3))
     print("Recall:", round(recall, 3))
     print("F1-score:", round(f1, 3))
+
+    plot_confusion_matrix(y_test, y_pred)
+
+

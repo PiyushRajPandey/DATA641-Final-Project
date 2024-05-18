@@ -49,6 +49,7 @@ def fetch_data(dataset, stopwords, clean_data, verbatim, test_size, seed):
 #       2. Random Forest Classifier
 #       3. KNN classifier
 #       4. Support Vector Classifier
+
 def train_and_test_models(
         X_train, X_test, y_train, y_test,
         stop_words, test_size,

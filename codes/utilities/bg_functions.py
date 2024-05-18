@@ -1,31 +1,34 @@
 import codecs
 import gzip
 import json
-import re
 import os
+import re
 
 import jsonlines
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.model_selection import train_test_split
 
+import codes.config as config
+
 
 def csv_to_jsonl_gz(file, destination):
-
     if not os.path.exists(destination):
 
+        df = pd.read_csv(file, encoding="latin1")
+
         text_col = None
+        df_selected = None
 
         if "personality" in file:
             text_col = "STATUS"
+            df_selected = df[["#AUTHID", text_col, "cNEU"]]
+
         else:
             text_col = "TEXT"
-
-        # Read CSV file
-        df = pd.read_csv(file, encoding="latin1")
-
-        # Select required columns
-        df_selected = df[["#AUTHID", text_col, "cNEU"]]
+            df_selected = df[["#AUTHID", text_col, "cNEU"]]
 
         # Write to JSONL file
         with gzip.open(destination, "wt") as jsonl_file:
@@ -57,13 +60,14 @@ def read_and_clean_lines(infile, verbatim):
             labels.append(data["cNEU"])
 
     if verbatim:
-        print("Read {} documents and labels".format(len(statuses)))
-        print("Read {} labels".format(len(labels)))
+        print("Read " + str(len(statuses)) + " documents and labels")
+        print("-" * 30, end="\n")
+        # print("Read {} labels".format(len(labels)))
 
     return statuses, labels
 
 
-def split_training_set(lines, labels, test_size, random_seed=42):
+def split_training_set(lines, labels, test_size, random_seed):
     X_train, X_test, y_train, y_test = train_test_split(
         lines, labels,
         test_size=test_size, random_state=random_seed
@@ -142,6 +146,9 @@ def preprocess_sentences(sentences):
         # Remove parentheses, brackets, and braces
         sentence = re.sub(r'[\(\)\[\]\{\}<>]', ' ', sentence)
 
+        # Remove URLs
+        sentence = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '',
+                          sentence)
         preprocessed_sentences.append(sentence)
     return preprocessed_sentences
 
@@ -199,3 +206,67 @@ def expand_contractions(sentence):
     expanded_sentence = pattern.sub(lambda x: contractions_dict[x.group()], sentence)
 
     return expanded_sentence
+
+
+def plot_feature_importance(clf, top_n, X):
+    print("hello world")
+
+    # Get feature importances
+    feature_importances = clf.feature_importances_
+
+    # Sort feature importances in descending order
+    indices = np.argsort(feature_importances)[::-1]
+
+    # Rearrange feature names so they match the sorted feature importances
+    names = [X.columns[i] for i in indices]
+
+    # Slice the feature names and importances to select only the top n
+    top_names = names[:top_n]
+    top_importances = feature_importances[indices][:top_n]
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    plt.title("Top 5 Feature Importance - Variation")
+    plt.bar(range(top_n), top_importances)
+    plt.xticks(range(top_n), top_names, rotation=30)
+    plt.show()
+
+
+def fetch_ensenble_learning_dataset(dataset_type, seed, test_size):
+
+    #  fetch entire dataset
+    X, y = None, None
+
+    text_col = None
+
+    # Reading the dataset
+    df = pd.read_csv(dataset_type, encoding="latin")
+
+    # Dropping irrelevant columns
+    if dataset_type == config.ESSAY_CSV:
+        X = df.drop(columns=['cNEU', '#AUTHID'])
+        text_col = "TEXT"
+
+    elif dataset_type == config.PERSONALITY_CSV:
+        X = df.drop(columns=['cNEU', 'DATE', '#AUTHID'])
+        text_col = "STATUS"
+
+    y = df['cNEU']
+
+    # Performing one-hot encoding on binary flags
+    X = pd.get_dummies(X, columns=['cEXT', 'cAGR', 'cCON', 'cOPN'], drop_first=True)
+
+    # remove NaN rows
+    X.dropna(inplace=True)
+    y = y[X.index]
+
+    X_train, X_test, y_train, y_test = split_training_set(X, y, test_size, seed)
+
+    # then split the columns
+    X_train1 = X_train.drop(columns=[text_col])
+    X_test1 = X_test.drop(columns=[text_col])
+
+    X_train2 = X_train[text_col]
+    X_test2 = X_test[text_col]
+
+    return X_train1, X_test1, X_train2, X_test2, y_train, y_test

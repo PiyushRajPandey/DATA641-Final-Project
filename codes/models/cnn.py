@@ -48,21 +48,21 @@ def build_cnn_model(num_words, embedding_matrix, max_sequence_length, embedding_
     )
 
     # Add convolutional layers
-    model.add(Conv1D(filters=256, kernel_size=11, activation='relu'))
+    model.add(Conv1D(filters=128, kernel_size=5, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
 
-    model.add(Conv1D(filters=128, kernel_size=9, activation='relu'))
+    model.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
     model.add(MaxPooling1D(pool_size=2))
 
     # Flatten layer
     model.add(Flatten())
 
     # Add fully connected layers
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dense(64, activation='sigmoid'))
+    model.add(Dropout(0.2))
 
     # Output layer
-    model.add(Dense(20, activation='softmax'))
+    model.add(Dense(2, activation='softmax'))
 
     # Compile the model
     model.compile(
@@ -70,6 +70,8 @@ def build_cnn_model(num_words, embedding_matrix, max_sequence_length, embedding_
         loss='sparse_categorical_crossentropy',
         metrics=['accuracy']
     )
+
+    print(model.summary())
 
     return model
 
@@ -95,11 +97,25 @@ def tokenize_and_prepare_dataset(X_train, X_test, y_train, y_test, tokenizer):
 
 
 if __name__ == '__main__':
-    glove_file_path = config.GLOVE_FILE_50D
-    embedding_dim = 50
+    # ---------------------------------------
+    # please use either or.
+
+    glove_file_path = config.GLOVE_FILE_200D
+    embedding_dim = 200
+
+    # glove_file_path = config.GLOVE_FILE_50D
+    # embedding_dim = 50
+
+    # ---------------------------------------
+    # Comment/uncomment to swap datasets
+
+    dataset = config.PERSONALITY_DATASET
+    # dataset = config.ESSAY_DATASET
+
+    # ---------------------------------------
 
     X_train, X_test, y_train, y_test, _ = sub_driver.fetch_data(
-        dataset=config.PERSONALITY_DATASET,
+        dataset=dataset,
         stopwords=config.STOPWORDS,
         clean_data=True, verbatim=False,
         test_size=0.2, seed=config.SEED
@@ -126,10 +142,10 @@ if __name__ == '__main__':
 
     history = model.fit(
         X_train, y_train,
-        epochs=30, batch_size=16,
+        epochs=30, batch_size=64,
         validation_data=(X_test, y_test),
         callbacks=[early_stopping_callback]
     )
 
-    loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
+    loss, accuracy = model.evaluate(X_test, y_test, verbose=2)
     print(f'Test accuracy: {accuracy:.4f}')

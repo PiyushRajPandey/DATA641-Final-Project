@@ -146,7 +146,7 @@ if __name__ == '__main__':
     #
     # document_similarity(documents)
     #
-    named_entity_recognition(documents)
+    # named_entity_recognition(documents)
     #
     # topic_modeling(documents)
 

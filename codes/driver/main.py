@@ -25,9 +25,8 @@ if __name__ == '__main__':
 
     # list of ML classifications methods one can try
     # -----------------------------------------------
-    ml_model_to_try = ["Logistic Reg", "Random Forest", "SVM", "KNN"]
-    # ml_model_to_try = ["Logistic Reg"]
-    # ml_model_to_try = ["Logistic Reg", "KNN"]
+    # ml_model_to_try = ["Logistic Reg", "Random Forest", "SVM", "KNN"]
+    ml_model_to_try = ["Logistic Reg"]
 
     # 3 different NLP methods to try
     # --------------------------------
@@ -58,21 +57,16 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test, stop_words = sub_driver.fetch_data(
         dataset=dataset,
         stopwords=stopwords_list,
-        clean_data=clean_data,
-        verbatim=verbatim,
-        test_size=test_size,
-        seed=seed
+        clean_data=clean_data, verbatim=verbatim,
+        test_size=test_size, seed=seed
     )
 
     # perform the needed training and testing
     sub_driver.train_and_test_models(
         X_train, X_test, y_train, y_test,
-        stop_words=stop_words,
-        mode=mode,
-        nlp_method=nlp_method,
-        ml_model_to_try=ml_model_to_try,
-        verbatim=verbatim,
-        stratify=stratify,
+        stop_words=stop_words, mode=mode,
+        nlp_method=nlp_method, ml_model_to_try=ml_model_to_try,
+        verbatim=verbatim, stratify=stratify,
         num_folds=num_folds,
         seed=seed, test_size=test_size
     )
